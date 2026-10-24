@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UrbanFlow AI - Smart City Civic Platform</title>
+<style>
+:root{--navy:#092d49;--teal:#009eaa;--bg:#f0f6fb;--ink:#18364f}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--navy);color:white;padding:18px 5%;display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap}
+.logo{font-size:23px;font-weight:bold;color:#42e1e5}
+nav{display:flex;gap:14px;flex-wrap:wrap}
+nav a{color:white;text-decoration:none;font-size:14px}
+.hero{background:linear-gradient(120deg,#092d49,#087f98);padding:38px 5%;color:white}
+.hero h1{font-size:36px;margin:0 0 12px}
+.hero p{line-height:1.7;max-width:750px}
+main{max-width:1250px;margin:auto;padding:20px}
+h2{font-size:22px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.card{background:white;border:1px solid #dce8ef;border-radius:13px;padding:18px;margin-bottom:16px;min-width:0}
+.stat{font-size:13px;color:#6c8294}
+.number{display:block;font-size:29px;margin-top:8px}
+label{display:block;font-size:13px;font-weight:bold;margin:12px 0 6px}
+input,select,textarea{width:100%;padding:11px;border:1px solid #cbdce8;border-radius:8px;font:inherit;background:white;color:#18364f}
+textarea{min-height:80px;resize:vertical}
+button{cursor:pointer;border:0;border-radius:8px;padding:11px 14px;background:var(--teal);color:white;font-weight:bold;margin:4px 3px 4px 0}
+button:hover{filter:brightness(.95)}
+.secondary{background:#e7f2f8;color:#123d57}
+.dark{background:#092d49}
+.red{background:#b52d37}
+.muted{color:#71869a;font-size:12px;line-height:1.6}
+.status{font-size:13px;color:#087c68;line-height:1.5}
+#chat{height:350px;overflow:auto;background:#f6fafc;border:1px solid #d7e5ed;border-radius:10px;padding:12px}
+.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:95%;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px}
+.bot{background:#e4f0f8}
+.user{background:#d7f5ee;margin-left:auto}
+.chatrow{display:flex;gap:6px;margin-top:10px}
+.chatrow input{min-width:0;flex:1}
+.badge{display:inline-block;padding:5px 8px;background:#e8f4fa;border-radius:20px;font-size:11px;margin:4px 3px 4px 0}
+.high{background:#ffe1e1;color:#a52020}
+.medium{background:#fff0c7;color:#805600}
+.low{background:#dcf6e7;color:#116c3c}
+.report{padding:13px 0;border-bottom:1px solid #e1ebf1;overflow-wrap:anywhere}
+.map{height:220px;border-radius:10px;background-color:#dff0df;background-image:linear-gradient(30deg,transparent 48%,white 49%,white 52%,transparent 53%),linear-gradient(110deg,transparent 47%,white 48%,white 51%,transparent 52%),repeating-linear-gradient(0deg,transparent 0 35px,#c5dfc4 36px 37px),repeating-linear-gradient(90deg,transparent 0 40px,#c5dfc4 41px 42px);position:relative;overflow:hidden}
+.pin{position:absolute;background:#c93636;color:white;border-radius:50%;width:28px;height:28px;padding:0;display:grid;place-items:center}
+footer{text-align:center;background:var(--navy);color:white;padding:22px;font-size:13px;line-height:1.7}
+@media(max-width:760px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{grid-template-columns:1fr}.hero h1{font-size:29px}main{padding:12px}header{padding:15px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">UrbanFlow AI
+    <div style="font-size:12px;color:white;font-weight:normal">Smart City Civic Platform</div>
+  </div>
+  <nav>
+    <a href="#dashboard">Dashboard</a>
+    <a href="#report">Report</a>
+    <a href="#map">Map</a>
+    <a href="#assistant">AI Assistant</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <h1>One Platform. Every Civic Problem.</h1>
+  <p>Report city problems using voice or text. Explore civic issues, track demo complaints, and get general guidance for cleaner, safer and more accessible cities.</p>
+  <button onclick="document.getElementById('report').scrollIntoView({behavior:'smooth'})">＋ Report a Problem</button>
+  <button class="dark" onclick="document.getElementById('assistant').scrollIntoView({behavior:'smooth'})">🎙 Talk to Assistant</button>
+</section>
+
+<main>
+<section id="dashboard">
+<h2>📊 Civic Dashboard</h2>
+<div class="grid">
+  <div class="card"><span class="stat">Total Reports</span><strong class="number" id="total">0</strong></div>
+  <div class="card"><span class="stat">Critical Reports</span><strong class="number" id="criticalCount">0</strong></div>
+  <div class="card"><span class="stat">In Progress</span><strong class="number" id="progressCount">0</strong></div>
+  <div class="card"><span class="stat">Resolved</span><strong class="number" id="resolvedCount">0</strong></div>
+</div>
+</section>
+
+<div class="layout">
+<div>
+<section class="card" id="report">
+<h2>📝 Register a Civic Complaint</h2>
+<p class="muted">Type your complaint or speak it. Voice input can fill in the category, description and urgency. Verify all details before submission.</p>
+
+<form id="reportForm">
+<label for="category">Problem Category</label>
+<select id="category">
+<option>Flooding / Waterlogging</option>
+<option>Blocked / Overflowing Drain</option>
+<option>Pothole / Damaged Road</option>
+<option>Garbage / Waste Collection</option>
+<option>Water Supply / Water Leakage</option>
+<option>Broken Streetlight</option>
+<option>Damaged Footpath</option>
+<option>Traffic / Road Safety</option>
+<option>Public Toilet / Sanitation</option>
+<option>Air Pollution</option>
+<option>Noise Pollution</option>
+<option>Damaged Public Property</option>
+<option>Accessibility / Wheelchair Access</option>
+<option>Construction Delay</option>
+<option>Other Civic Problem</option>
+</select>
+
+<label for="location">Location or Road Name *</label>
+<input id="location" required maxlength="150" placeholder="Street, area or nearby landmark">
+
+<label for="description">Complaint Description *</label>
+<textarea id="description" required maxlength="1000" placeholder="Explain what happened"></textarea>
+
+<label for="urgency">Urgency</label>
+<select id="urgency">
+<option>Normal</option>
+<option>Urgent</option>
+<option>Critical</option>
+</select>
+
+<div>
+<button type="button" onclick="startComplaintVoice()">🎙 Register Complaint by Voice</button>
+<button type="button" class="secondary" onclick="stopVoice()">■ Stop Voice</button>
+</div>
+<p id="complaintVoiceStatus" class="status" aria-live="polite">Tap the voice button and speak your complaint.</p>
+
+<button type="submit">Submit Complaint</button>
+<button type="reset" class="secondary">Clear Form</button>
+<p id="reportMessage" class="status" aria-live="polite"></p>
+</form>
+</section>
+
+<section class="card" id="map">
+<h2>📍 Complaint Map Preview</h2>
+<div class="map" id="mapCanvas">
+<span class="pin" style="left:25%;top:25%" title="Illustrative sample marker">!</span>
+<span class="pin" style="left:65%;top:55%" title="Illustrative sample marker">!</span>
+</div>
+<p class="muted">This is an illustrative map, not a live geographic map. Marker positions are placeholders, not verified complaint coordinates.</p>
+</section>
+</div>
+
+<div>
+<section class="card" id="assistant">
+<h2>🤖 Civic AI Assistant</h2>
+<p class="muted">Ask about roads, garbage, water, drains, pollution, public safety, accessibility, construction and other civic topics.</p>
+
+<div id="chat" aria-live="polite">
+<div class="msg bot">Hello! I can answer common civic questions and help prepare complaint reports. Ask by typing or speaking. This demo uses predefined guidance rather than a live AI model.</div>
+</div>
+
+<div class="chatrow">
+<input id="chatInput" maxlength="1000" placeholder="Ask a civic question...">
+<button onclick="sendText()">Send</button>
+</div>
+<button id="micButton" onclick="startAssistantVoice()">🎙 Ask by Voice</button>
+<button class="secondary" onclick="toggleSpeech()">🔊 Replies: <span id="speechState">ON</span></button>
+<p class="status" id="assistantVoiceStatus" aria-live="polite">Voice status: Ready</p>
+</section>
+
+<section class="card">
+<h2>📋 Complaint Tracking</h2>
+<label for="trackInput">Enter complaint ID</label>
+<input id="trackInput" placeholder="Example: UF-12345678">
+<button onclick="trackComplaint()">Track Complaint</button>
+<p id="trackResult" class="status" aria-live="polite"></p>
+<div id="reports"><p class="muted">No complaints submitted yet.</p></div>
+</section>
+
+<section class="card">
+<h3>🛡️ Safety Guidance</h3>
+<ul>
+<li>Avoid walking or driving through floodwater.</li>
+<li>Stay away from open drains and exposed electrical wires.</li>
+<li>Do not touch unknown or hazardous waste.</li>
+<li>Contact local emergency services if someone is in immediate danger.</li>
+<li>Follow official public safety and weather alerts.</li>
+</ul>
+</section>
+</div>
+</div>
+</main>
+
+<footer>
+UrbanFlow AI · Student Hackathon Prototype<br>
+This is not an official government service. Complaints are stored in this browser only and are not automatically sent to municipal authorities.
+</footer>
+
+<script>
+"use strict";
+
+const STORAGE_KEY = "urbanflow_complete_demo_v3";
+let reports = loadReports();
+let recognition = null;
+let voiceMode = "";
+let speechEnabled = true;
+
+function loadReports() {
+  try {
+    const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveReports() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(reports));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function safeText(value) {
+  return String(value).replace(/[&<>"']/g, c => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;",
+    '"':"&quot;", "'":"&#39;"
+  }[c]));
+}
+
+function speak(text) {
+  if (!speechEnabled || !("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "en-IN";
+  window.speechSynthesis.speak(utterance);
+}
+
+function toggleSpeech() {
+  speechEnabled = !speechEnabled;
+  document.getElementById("speechState").textContent =
+    speechEnabled ? "ON" : "OFF";
+  if (!speechEnabled && "speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+  }
+}
+
+function addMessage(text, type) {
+  const chat = document.getElementById("chat");
+  const div = document.createElement("div");
+  div.className = "msg " + type;
+  div.textContent = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function sendText() {
+  const input = document.getElementById("chatInput");
+  const message = input.value.trim();
+  if (!message) return;
+
+  input.value = "";
+  addMessage(message, "user");
+  const reply = getCivicAnswer(message);
+  addMessage(reply, "bot");
+  speak(reply);
+}
+
+document.getElementById("chatInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    sendText();
+  }
+});
+
+function getCivicAnswer(message) {
+  const q = message.toLowerCase();
+
+  const rules = [
+    [["hello","hi","hey","good morning","good evening"],
+      "Hello! I can help with common civic problems, complaint reporting and general city-service guidance. What happened?"],
+    [["pothole","damaged road","broken road","road crack"],
+      "For a pothole or damaged road, record the street, nearest landmark and the danger it creates. Submit a report under Pothole / Damaged Road. Avoid unsafe areas."],
+    [["garbage","rubbish","trash","waste collection","dustbin","litter","dumping"],
+      "For a garbage problem, describe the location, amount of waste and how long it has remained. Submit under Garbage / Waste Collection. Avoid touching hazardous waste."],
+    [["water supply","no water","water shortage","dirty water","contaminated water","water leakage","pipe leak"],
+      "Describe whether water is unavailable, leaking or appears contaminated. Include the location and time. Avoid drinking water suspected of contamination until authorities provide guidance."],
+    [["streetlight","street light","lamp post","dark road","light not working"],
+      "Report the streetlight location and whether nearby lights are also out. Stay away from damaged electrical equipment or exposed wiring."],
+    [["drain","drainage","overflowing drain","waterlogging","flood","flooding","heavy rain"],
+      "For flooding or blocked drains, report the location and whether water is rising. Avoid floodwater and open drains. Follow official emergency alerts."],
+    [["footpath","sidewalk","wheelchair","ramp","accessibility","accessible route","steps"],
+      "Describe the accessibility barrier, such as steps, missing ramps or broken pavement. Include the route and nearest landmark. Verify any route before describing it as accessible."],
+    [["traffic","signal","congestion","road safety","crossing","pedestrian"],
+      "Describe the junction, time and traffic hazard. Do not enter traffic to gather evidence. Contact emergency services for immediate danger."],
+    [["pollution","air quality","smoke","dust","pm2.5","pm10"],
+      "Record the location, time and visible pollution source if safe. Visual reports do not measure pollutant concentration; that requires appropriate sensors or official data."],
+    [["noise","loud music","loudspeaker","sound pollution"],
+      "Record the location, time and duration of excessive noise. Report it to the relevant local authority according to local rules."],
+    [["construction","construction delay","project delay","road work"],
+      "Record the project location, observed issue, date and any published milestone information. Do not enter restricted construction areas."],
+    [["toilet","sanitation","sewage","sewerage"],
+      "Specify the affected facility, location and sanitation issue. Avoid contact with sewage or contaminated water."],
+    [["electricity","electric wire","power line","exposed wire","electric pole","live wire"],
+      "Stay well away from exposed wires and damaged electrical equipment, particularly in wet areas. Contact the electricity provider or emergency services if there is immediate danger."],
+    [["park","tree","public property","bench","playground","broken facility"],
+      "Identify the damaged public facility and location. Describe the damage and whether it creates a safety risk."],
+    [["track complaint","complaint status","track report","my complaint","report id","complaint id"],
+      "Use Complaint Tracking and enter the ID shown after submitting your demo report. This tracks only reports stored in this browser, not official government complaints."],
+    [["how to report","submit report","make a complaint","file complaint"],
+      "Select a category, enter the location, describe the issue and choose urgency. You can use voice registration, review the form and press Submit Complaint."],
+    [["government","municipality","municipal office","corporation","official complaint"],
+      "This is a student prototype. Sending reports to government offices requires a secure backend and an authorized municipal integration or official reporting workflow."],
+    [["emergency","someone in danger","life threatening","urgent danger"],
+      "If someone is in immediate danger, contact appropriate local emergency services now. This demo cannot dispatch emergency assistance."],
+    [["weather","rain forecast","temperature","will it rain"],
+      "This standalone website has no live weather feed. Check an official weather service for current conditions and warnings."],
+    [["thank you","thanks"],
+      "You're welcome! You can ask another civic question or register a complaint."]
+  ];
+
+  for (const rule of rules) {
+    if (rule[0].some(keyword => q.includes(keyword))) {
+      return rule[1];
+    }
+  }
+
+  return "I couldn't identify a specific answer from my demo knowledge. Please describe the problem in more detail, including what happened and where. I can help prepare a report, but genuinely open-ended answers require integration with a real AI model through a secure backend.";
+}
+
+/* Shared voice recognition for assistant and complaint form */
+function startRecognition(mode) {
+  const SpeechAPI =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechAPI) {
+    const message = "Speech recognition is not supported in this browser. Please type instead.";
+    document.getElementById("assistantVoiceStatus").textContent = message;
+    document.getElementById("complaintVoiceStatus").textContent = message;
+    return;
+  }
+
+  stopVoice();
+  voiceMode = mode;
+  recognition = new SpeechAPI();
+  recognition.lang = "en-IN";
+  recognition.continuous = false;
+  recognition.interimResults = true;
+
+  const statusId = mode === "complaint"
+    ? "complaintVoiceStatus" : "assistantVoiceStatus";
+
+  document.getElementById(statusId).textContent =
+    "Listening... Speak clearly.";
+
+  recognition.onresult = event => {
+    let finalText = "";
+    let interim = "";
+
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      if (event.results[i].isFinal) {
+        finalText += event.results[i][0].transcript;
+      } else {
+        interim += event.results[i][0].transcript;
+      }
+    }
+
+    if (interim) {
+      document.getElementById(statusId).textContent =
+        "Hearing: " + interim;
+    }
+
+    if (finalText.trim()) {
+      if (mode === "complaint") {
+        fillComplaintFromVoice(finalText.trim());
+      } else {
+        document.getElementById("chatInput").value = finalText.trim();
+        sendText();
+        document.getElementById(statusId).textContent =
+          "Voice question processed.";
+      }
+    }
+  };
+
+  recognition.onerror = event => {
+    document.getElementById(statusId).textContent =
+      "Voice error: " + event.error +
+      ". Check microphone permission or type instead.";
+  };
+
+  recognition.onend = () => {
+    recognition = null;
+    voiceMode = "";
+  };
+
+  try {
+    recognition.start();
+  } catch (e) {
+    recognition = null;
+    voiceMode = "";
+    document.getElementById(statusId).textContent =
+      "Could not start listening. Try again.";
+  }
+}
+
+function startComplaintVoice() {
+  startRecognition("complaint");
+}
+
+function startAssistantVoice() {
+  startRecognition("assistant");
+}
+
+function stopVoice() {
+  if (recognition) {
+    try { recognition.abort(); } catch (e) {}
+  }
+  recognition = null;
+  voiceMode = "";
+  document.getElementById("assistantVoiceStatus").textContent =
+    "Voice listening stopped.";
+  document.getElementById("complaintVoiceStatus").textContent =
+    "Voice listening stopped.";
+}
+
+function fillComplaintFromVoice(text) {
+  document.getElementById("description").value = text;
+  const q = text.toLowerCase();
+
+  const categories = [
+    [["pothole","damaged road","broken road"],"Pothole / Damaged Road"],
+    [["garbage","rubbish","waste","trash","dumping"],"Garbage / Waste Collection"],
+    [["streetlight","street light","lamp post"],"Broken Streetlight"],
+    [["drain","drainage","flood","waterlogging"],"Blocked / Overflowing Drain"],
+    [["water supply","no water","water leakage","pipe leak"],"Water Supply / Water Leakage"],
+    [["footpath","sidewalk","wheelchair","ramp"],"Damaged Footpath"],
+    [["pollution","smoke","dust"],"Air Pollution"],
+    [["traffic","signal","congestion"],"Traffic / Road Safety"],
+    [["construction","project delay"],"Construction Delay"],
+    [["noise","loud music"],"Noise Pollution"],
+    [["public toilet","sewage","sanitation"],"Public Toilet / Sanitation"],
+    [["public property","broken bench","damaged park"],"Damaged Public Property"]
+  ];
+
+  for (const item of categories) {
+    if (item[0].some(word => q.includes(word))) {
+      document.getElementById("category").value = item[1];
+      break;
+    }
+  }
+
+  if (["life threatening","live wire","someone is in danger"]
+      .some(word => q.includes(word))) {
+    document.getElementById("urgency").value = "Critical";
+  } else if (["urgent","dangerous","emergency","immediately"]
+      .some(word => q.includes(word))) {
+    document.getElementById("urgency").value = "Urgent";
+  }
+
+  document.getElementById("complaintVoiceStatus").textContent =
+    "Complaint captured. Enter the location and verify all details before submitting.";
+
+  speak("Your complaint details have been added to the form. Please enter the location and check the details.");
+}
+
+/* Complaint registration and local demo storage */
+document.getElementById("reportForm").addEventListener("submit", event => {
+  event.preventDefault();
+
+  const location = document.getElementById("location").value.trim();
+  const description = document.getElementById("description").value.trim();
+
+  if (!location || !description) {
+    document.getElementById("reportMessage").textContent =
+      "Please enter both the location and complaint description.";
+    return;
+  }
+
+  const report = {
+    id: "UF-" + Date.now().toString().slice(-8),
+    category: document.getElementById("category").value,
+    location: location,
+    description: description,
+    urgency: document.getElementById("urgency").value,
+    status: "Reported",
+    time: new Date().toLocaleString()
+  };
+
+  reports.unshift(report);
+
+  if (!saveReports()) {
+    reports.shift();
+    document.getElementById("reportMessage").textContent =
+      "Could not save the report. Check browser storage settings.";
+    return;
+  }
+
+  renderReports();
+
+  document.getElementById("reportMessage").textContent =
+    "Demo complaint saved! Your ID is " + report.id +
+    ". It has not been sent to a government office.";
+
+  document.getElementById("trackInput").value = report.id;
+  document.getElementById("trackResult").textContent =
+    "Your report ID is " + report.id + ". Current status: Reported.";
+
+  speak("Your demo complaint has been saved. Your report ID is " + report.id);
+});
+
+function trackComplaint() {
+  const id = document.getElementById("trackInput").value.trim().toUpperCase();
+  const report = reports.find(r => r.id.toUpperCase() === id);
+
+  document.getElementById("trackResult").textContent = report
+    ? "Report " + report.id + " — " + report.category +
+      ". Status: " + report.status + ". Location: " + report.location
+    : "No matching report found in this browser. Check the ID.";
+}
+
+function changeStatus(id, status) {
+  const report = reports.find(r => r.id === id);
+  if (!report) return;
+  const oldStatus = report.status;
+  report.status = status;
+
+  if (!saveReports()) {
+    report.status = oldStatus;
+    alert("Could not save this status change.");
+  }
+  renderReports();
+}
+
+function renderReports() {
+  document.getElementById("total").textContent = reports.length;
+  document.getElementById("criticalCount").textContent =
+    reports.filter(r => r.urgency === "Critical" && r.status !== "Resolved").length;
+  document.getElementById("progressCount").textContent =
+    reports.filter(r => r.status === "In Progress").length;
+  document.getElementById("resolvedCount").textContent =
+    reports.filter(r => r.status === "Resolved").length;
+
+  const container = document.getElementById("reports");
+
+  if (!reports.length) {
+    container.innerHTML = '<p class="muted">No complaints submitted yet.</p>';
+  } else {
+    container.innerHTML = reports.map(r => `
+      <div class="report">
+        <strong>${safeText(r.category)}</strong><br>
+        <span class="badge">${safeText(r.id)}</span>
+        <span class="badge ${r.urgency === "Critical" ? "high" : r.urgency === "Urgent" ? "medium" : "low"}">${safeText(r.urgency)}</span>
+        <div>${safeText(r.location)}</div>
+        <small>${safeText(r.time)}</small>
+        <p>${safeText(r.description)}</p>
+        <label for="status-${safeText(r.id)}">Demo status</label>
+        <select id="status-${safeText(r.id)}" onchange="changeStatus('${safeText(r.id)}',this.value)">
+          ${["Reported","Verified","Assigned","In Progress","Resolved"].map(s =>
+            `<option value="${s}" ${r.status === s ? "selected" : ""}>${s}</option>`
+          ).join("")}
+        </select>
+      </div>
+    `).join("");
+  }
+
+  const map = document.getElementById("mapCanvas");
+  map.querySelectorAll(".report-pin").forEach(pin => pin.remove());
+
+  reports.slice(0, 10).forEach((r, i) => {
+    const pin = document.createElement("span");
+    pin.className = "pin report-pin";
+    pin.style.left = (8 + (i * 23) % 82) + "%";
+    pin.style.top = (12 + (i * 29) % 72) + "%";
+    pin.textContent = "!";
+    pin.title = r.category + " - " + r.location +
+      " (illustrative marker; not a real location)";
+    map.appendChild(pin);
+  });
+}
+
+renderReports();
+</script>
+</body>
+</html>
